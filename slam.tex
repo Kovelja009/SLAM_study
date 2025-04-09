@@ -1,0 +1,132 @@
+\documentclass[12pt]{article}
+
+\usepackage[a4paper,  top=1.3in, bottom=1.4in, left=1.4in, right=1.5in]{geometry}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+
+
+\usepackage{graphicx, float}
+\usepackage{adjustbox}
+\graphicspath{{images/}}
+
+% \renewcommand{\figurename}{Slika}
+
+
+
+\renewcommand{\baselinestretch}{1.2} % Line spacing
+
+% Parskip and parindent
+\setlength{\parindent}{0pt} % Begin of paragraph indentation
+\setlength{\parskip}{1em} % Paragraph spacing
+
+%--- for references ---------
+\usepackage[
+    backend=biber,
+    style=numeric,
+    sorting=none
+    ]{biblatex}
+
+\addbibresource{bibliography.bib}
+\AtBeginBibliography{\vspace*{10pt}}
+%----------------------------
+
+%----------- toc ------------------------
+\usepackage{tocloft}
+\usepackage{fancyhdr}
+% \setlength{\cftbeforesecskip}{0pt} % Adjust the spacing before section entries
+% \setlength{\cftbeforesubsecskip}{0pt} % Adjust the spacing before subsection entries
+%----------------------------------------
+
+\begin{document}
+
+% Title Page
+\newgeometry{top=1in, bottom=1in, left=1in, right=1in} % New margins for title page
+\begin{titlepage}
+    \begin{center}
+        
+        % add your university logo here
+        % negative value moves the logo up
+        \vspace*{-1in}
+        \includegraphics[width=0.4\textwidth]{raf_logo.png}
+
+        % set font size to 14pt
+        \vspace{1in}
+        \Large
+        \textbf{Review on the topic of}
+        
+        % set horizontal margin for the title to 1.5in and center it
+        \vspace{1in}
+        \Huge
+        \textbf{Simultaneous localization and mapping (SLAM)}
+        
+        \vspace{1in}
+
+
+            \fontsize{17pt}{17pt}\selectfont
+            \textbf{Course: Robotics} \\
+            \vspace*{1.5in}
+            
+            \begin{center}
+            \normalsize
+            \begin{tabular}{p{0.75\textwidth} p{0.5\textwidth}}
+                \fontsize{14pt}{18pt}\selectfont   
+                \textbf{Advisor:} & 
+            
+                \fontsize{14pt}{18pt}\selectfont
+                \textbf{Student:} \\
+                prof. Miloš Jovanović & Vanja Kovinić \\
+            \end{tabular}
+            \end{center}
+
+            \vspace*{\fill}
+
+            \normalsize
+            Belgrade, 2025.
+
+
+            
+        \end{center}
+    \end{titlepage}
+    \restoregeometry % Restore original margins
+
+    \newpage
+    \newgeometry{top=1.3in, bottom=2.2in, left=1.4in, right=1.4in} % New margins for title page
+
+    \tableofcontents
+
+
+    \section{Introduction to SLAM}
+    \subsection{Definition and Problem Statement}
+    \subsection{Historical Context and Importance in Robotics}
+
+    \section{Fundamental Challenges in SLAM}
+    \subsection{The Chicken-and-Egg Problem}
+    \subsection{Sensor Limitations and Environmental Factors}
+    \subsection{Loop Closure and Data Association}
+
+    \section{Classical Approaches to SLAM}
+    \subsection{Filter-Based Methods}
+    \subsection{Graph-Based Optimization}
+    \subsection{Traditional Visual SLAM Systems}
+
+    \section{Deep Learning in Modern SLAM}
+    \subsection{Learned Features vs. Handcrafted Features}
+    \subsection{End-to-End SLAM Architectures}
+    \subsection{Neural Implicit Representations for Mapping}
+    \subsection{Depth Estimation Networks}
+
+    \section{Computer Vision Advancements in SLAM}
+    \subsection{Visual Odometry and Place Recognition}
+    \subsection{Semantic SLAM}
+    \subsection{Dynamic Environment Handling}
+
+    \section{Current Research and Applications}
+    \subsection{Self-Supervised and Few-Shot Learning}
+    \subsection{Real-World Applications}
+    \subsection{Challenges and Future Directions}
+
+\end{document}
