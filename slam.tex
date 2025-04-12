@@ -42,6 +42,7 @@
 %----------------------------------------
 
 \begin{document}
+\pagenumbering{gobble}  % Suppress page numbers initially
 
 % Title Page
 \newgeometry{top=1in, bottom=1in, left=1in, right=1in} % New margins for title page
@@ -99,7 +100,9 @@
     \tableofcontents
 
     \newpage
-
+    \clearpage             % Move to a new page
+    \pagenumbering{arabic} % Start using Arabic numerals
+    \setcounter{page}{1}   % Set the counter to 1
     \section{Introduction to SLAM}
     \subsection{Definition and Problem Statement}
     \textbf{Simultaneous Localization and Mapping (SLAM)} represents one of the fundamental challenges in robotics. At its core, SLAM addresses a deceptively simple question: 
@@ -290,12 +293,156 @@
 
     While structured, static environments are reasonably well-handled by current algorithms, dynamic, changing, or visually ambiguous environments continue to pose significant difficulties that drive ongoing research.
 
+    \section{Classical Approaches to SLAM}
 
+    \subsection{Filter-Based Methods}
+    
+    Filter-based methods dominated early SLAM research, providing principled approaches to handling the inherent uncertainties in robot motion and sensing. These methods recursively estimate the posterior probability distribution over 
+    robot poses and map features as new observations arrive.
+    
+    \textbf{Extended Kalman Filter SLAM (EKF-SLAM)} was the first widely adopted approach to SLAM. Introduced in the early 1990s, EKF-SLAM represents the joint state of the robot and map features with a multivariate Gaussian distribution, 
+    maintaining both mean estimates and their uncertainty through a covariance matrix.
+    
+    The EKF-SLAM algorithm operates in two phases:
+    \begin{itemize}
+        \item \textbf{Prediction step}: Updates the state estimate based on robot motion, typically increasing uncertainty
+        \item \textbf{Correction step}: Incorporates sensor measurements to update both the state estimate and reduce uncertainty
+    \end{itemize}
 
-    % \section{Classical Approaches to SLAM}
-    % \subsection{Filter-Based Methods}
-    % \subsection{Graph-Based Optimization}
-    % \subsection{Traditional Visual SLAM Systems}
+    \begin{figure}[h!]
+        \centering
+        \includegraphics[width=0.7\textwidth]{D-EKF-SLAM-operation.png}
+        \caption{This flowchart shows the EKF-SLAM algorithm process. Starting with initial states and covariance, it follows a prediction phase when the robot moves, 
+        then branches into an update phase that either updates existing landmarks or initializes new ones, ultimately producing updated states and covariance. \cite{ekf_slam_img}}
+        \label{fig:D-EKF-SLAM-operation}
+    \end{figure}
+    
+    The mathematical formulation involves:
+    \begin{itemize}
+        \item State vector $\mathbf{x} = [\mathbf{x}_r, \mathbf{m}_1, \mathbf{m}_2, ..., \mathbf{m}_n]^T$ combining robot pose $\mathbf{x}_r$ and map features $\mathbf{m}_i$
+        \item Covariance matrix $\mathbf{P}$ representing uncertainty in the state estimate and correlations between variables
+        \item Nonlinear motion model $\mathbf{f}(\mathbf{x}, \mathbf{u})$ with control input $\mathbf{u}$
+        \item Nonlinear observation model $\mathbf{h}(\mathbf{x})$ relating state to expected measurements
+    \end{itemize}
+    
+    EKF-SLAM handles the chicken-and-egg problem by explicitly maintaining correlations between the robot pose and map features. When the robot observes a landmark, the uncertainty in both the robot's 
+    position and the landmark's position becomes correlated—improving the estimate of one improves the estimate of the other.
+    
+    However, EKF-SLAM suffers from significant limitations:
+    \begin{itemize}
+        \item $O(n^2)$ computational complexity with $n$ landmarks, making it unsuitable for large-scale environments
+        \item Linearization errors from the extended Kalman filter that can cause inconsistency and divergence
+        \item Difficulty handling multi-modal distributions and ambiguous data associations
+        \item Sensitivity to outliers in sensor measurements
+    \end{itemize}
+    
+    \textbf{Particle Filter SLAM} addresses some EKF-SLAM limitations by representing the posterior distribution with a set of weighted samples (particles) rather than a single Gaussian. The most influential 
+    particle filter approach, FastSLAM, introduced by Montemerlo et al. in 2002 \cite{fast_slam}, uses a Rao-Blackwellized particle filter that:
+    \begin{itemize}
+        \item Factors the SLAM posterior into robot trajectory and map features conditioned on trajectory
+        \item Represents the robot trajectory distribution with particles
+        \item Represents map feature estimates with compact EKFs, one per particle
+    \end{itemize}
+    
+    This factorization leverages a key insight: conditioned on the robot trajectory, map features are independent. The FastSLAM algorithm:
+    \begin{itemize}
+        \item Maintains multiple trajectory hypotheses through particles
+        \item Updates individual map features efficiently with separate EKFs
+        \item Naturally handles multi-modal distributions and ambiguous data associations
+        \item Resamples particles based on observation likelihood, removing unlikely trajectories
+    \end{itemize}
+
+    \newpage
+    \begin{figure}[h!]
+        \centering
+        \includegraphics[width=0.7\textwidth]{fast_slam_img.png}
+        \caption{This diagram shows the FastSLAM particle filter process. Two particles (m and n) are sampled from previous to temporary states. Particles represent different possible robot pose hypotheses. 
+        Each particle maintains separate uncertainty estimates for two landmarks, shown as ellipses - larger ellipses indicate greater positional uncertainty. 
+        Light blue ellipses represent landmark filter \#1, while darker blue ellipses represent landmark filter \#2, with the uncertainty patterns varying between particles. \cite{fast_slam_img}}
+        \label{fig:fast_slam_img}
+    \end{figure}
+    
+    FastSLAM achieves $O(M \log N)$ complexity for $M$ particles and $N$ landmarks, allowing it to scale better than EKF-SLAM to larger environments.
+    
+    Despite these advantages, particle filter approaches have their own limitations:
+    \begin{itemize}
+        \item Particle depletion in high-dimensional spaces
+        \item Difficulty representing long trajectories efficiently
+        \item Computational constraints on the number of particles
+        \item Need for resampling, which can cause loss of diversity
+    \end{itemize}
+    
+    Filter-based methods laid the groundwork for understanding SLAM as a probabilistic estimation problem, but their limitations in handling large-scale environments eventually 
+    led to the development of more efficient optimization-based approaches.
+    
+    \subsection{Graph-Based Optimization}
+    
+    Graph-based optimization has become the dominant paradigm in modern SLAM systems, offering superior scalability and accuracy compared to filter-based methods. 
+    Rather than recursively updating a state estimate, graph-based SLAM formulates the problem as finding the configuration of robot poses and map features that best explains all observations.
+    
+    The core idea is to represent SLAM as a sparse graph where:
+    \begin{itemize}
+        \item \textbf{Nodes} represent robot poses and map features
+        \item \textbf{Edges} represent constraints from odometry measurements and landmark observations
+    \end{itemize}
+    
+    This approach was pioneered by Lu and Milios in the 1990s but became practical only in the 2000s with the development of efficient optimization techniques. 
+    The graph-based formulation transforms SLAM into a nonlinear least squares problem, finding the configuration of nodes that minimizes the sum of squared errors introduced by the constraints.
+    
+    Mathematically, we aim to find the state vector $\mathbf{x}$ that minimizes:
+    
+    $$\mathbf{x}^* = \arg\min_{\mathbf{x}} \sum_{i,j} \rho(\mathbf{e}_{ij}^T \mathbf{\Omega}_{ij} \mathbf{e}_{ij})$$
+    
+    Where:
+    \begin{itemize}
+        \item $\mathbf{e}_{ij}$ is the error between predicted and measured relative poses or observations
+        \item $\mathbf{\Omega}_{ij}$ is the information matrix (inverse covariance) representing constraint certainty
+        \item $\rho$ is a robust cost function that reduces the influence of outliers
+    \end{itemize}
+    
+    Key advantages of graph-based SLAM include:
+    \begin{itemize}
+        \item \textbf{Scalability}: Sparse graph structure enables efficient optimization even for large environments
+        \item \textbf{Global consistency}: Optimizes all constraints simultaneously instead of sequential filtering
+        \item \textbf{Loop closure integration}: Naturally incorporates loop closures as additional constraints
+        \item \textbf{Incremental operation}: Can update the solution efficiently as new information arrives
+    \end{itemize}
+    
+    Graph-based SLAM also integrates well with both traditional and learning-based front-ends that extract constraints from sensor data. 
+    The separation of front-end (data association and constraint extraction) from back-end (optimization) has enabled modular system design and focused innovation in each component.
+    
+    \newpage
+    While graph-based optimization overcomes many limitations of filter-based methods, challenges remain:
+    \begin{itemize}
+        \item \textbf{Initialization sensitivity}: Performance depends on good initial values for optimization
+        \item \textbf{Outlier robustness}: False constraints can significantly distort the solution
+        \item \textbf{Parameter tuning}: Requires careful selection of robust cost functions and optimization parameters
+    \end{itemize}
+    
+    Nevertheless, graph-based optimization has proven remarkably successful, becoming the foundation for most state-of-the-art SLAM systems in the last decade.
+    
+    \begin{figure}[h!]
+        \centering
+        \includegraphics[width=1.1\textwidth]{graph_based_optimization.png}
+        \caption{An example of the graph optimization. \cite{graph_optimization_img}}
+        \label{fig:D-EKF-SLAM-operation}
+    \end{figure}
+
+    \newpage
+    \subsection{Traditional Visual SLAM Systems}
+    Visual SLAM systems use cameras as their primary sensing modality, offering rich environmental information at relatively low cost. Three main approaches have emerged in traditional visual SLAM:
+    
+    \textbf{1. Feature-based methods} detect and track distinctive points across frames, using them as landmarks. These systems typically operate through feature detection, description, matching, 
+    motion estimation, and bundle adjustment to optimize camera poses and feature positions. Key innovations include parallel tracking and mapping threads and keyframe-based representations.
+    
+    \textbf{2. Direct methods} operate on image intensity values without extracting features, potentially using all pixels rather than sparse points. These approaches minimize photometric error rather than 
+    geometric reprojection error and can work in less textured environments where feature detection might fail.
+    
+    \textbf{3. Hybrid approaches} combine elements of both feature-based and direct methods for increased robustness and efficiency.
+    Traditional visual SLAM systems face several challenges: scale ambiguity in monocular setups, difficult initialization, sensitivity to dynamic objects and illumination changes, and poor performance in textureless regions. 
+    Many systems address these limitations by incorporating additional sensing modalities like stereo cameras, RGB-D sensors, or IMUs.
+    Despite impressive performance in controlled environments, traditional visual SLAM approaches still struggle with perceptual aliasing, long-term operation in changing environments, and semantic 
+    understanding—limitations that have motivated the integration of learning-based methods.
 
     % \section{Deep Learning in Modern SLAM}
     % \subsection{Learned Features vs. Handcrafted Features}
