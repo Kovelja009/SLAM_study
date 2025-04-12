@@ -425,7 +425,7 @@
         \centering
         \includegraphics[width=1.1\textwidth]{graph_based_optimization.png}
         \caption{An example of the graph optimization. \cite{graph_optimization_img}}
-        \label{fig:D-EKF-SLAM-operation}
+        \label{fig:graph_based_optimization}
     \end{figure}
 
     \newpage
@@ -444,11 +444,175 @@
     Despite impressive performance in controlled environments, traditional visual SLAM approaches still struggle with perceptual aliasing, long-term operation in changing environments, and semantic 
     understanding—limitations that have motivated the integration of learning-based methods.
 
-    % \section{Deep Learning in Modern SLAM}
-    % \subsection{Learned Features vs. Handcrafted Features}
-    % \subsection{End-to-End SLAM Architectures}
-    % \subsection{Neural Implicit Representations for Mapping}
-    % \subsection{Depth Estimation Networks}
+    \newpage
+
+    \section{Deep Learning in Modern SLAM}
+
+    Deep learning has revolutionized numerous aspects of SLAM systems, addressing many limitations of traditional approaches while introducing new capabilities. 
+    Rather than completely replacing geometric methods, learning-based components typically enhance SLAM pipelines by leveraging data-driven insights where classical algorithms struggle.
+    
+    \subsection{Learned Features vs. Handcrafted Features}
+    
+    Traditional SLAM systems rely on handcrafted feature detectors and descriptors like SIFT \cite{sift}, SURF \cite{surf}, and ORB \cite{orb_slam}, which were designed based on human intuition about what makes points distinctive and matchable. 
+    While effective in many scenarios, these features have inherent limitations:
+    
+    \begin{itemize}
+        \item Poor performance under challenging conditions (illumination changes, motion blur)
+        \item Limited robustness to viewpoint variations
+        \item Difficulty in textureless or repetitive environments
+        \item Inability to adapt to specific domains without manual tuning
+    \end{itemize}
+    
+    Deep learning has transformed feature extraction through learned alternatives that outperform traditional methods in robustness and accuracy. 
+    These approaches typically use convolutional neural networks (CNNs) trained on large datasets of image pairs with known correspondences.
+    
+    \newpage
+    Learned feature detectors identify keypoints that are:
+    \begin{itemize}
+        \item Repeatable across different views and conditions
+        \item Distinctive enough for reliable matching
+        \item Accurately localizable in the image
+    \end{itemize}
+    
+    Key advantages of learned features include:
+    \begin{itemize}
+        \item \textbf{Adaptability}: Can be trained for specific environments or conditions
+        \item \textbf{Context awareness}: Consider wider image context beyond local patches
+        \item \textbf{Task optimization}: Can be trained specifically for SLAM performance metrics
+        \item \textbf{Robustness}: Better handling of challenging conditions than handcrafted features
+    \end{itemize}
+    
+    Many modern systems adopt a hybrid approach, using learned features for challenging situations while maintaining handcrafted features for computational efficiency in standard conditions. 
+    This combination leverages the strengths of both paradigms: the proven reliability of geometric methods and the adaptability of learning-based approaches.
+    
+    \newpage
+    \subsection{End-to-End SLAM Architectures}
+    
+    End-to-end SLAM architectures represent the most ambitious application of deep learning to SLAM, aiming to replace traditional modular pipelines with neural networks that directly map 
+    sensor inputs to pose estimates and map representations. These systems attempt to learn the entire SLAM process through data rather than explicit geometric modeling.
+    
+    Unlike traditional SLAM systems that consist of clearly defined components (feature extraction, matching, pose estimation, mapping, loop closure), end-to-end approaches blur these boundaries, 
+    allowing the network to discover its own internal representations and processing steps.
+    
+    The spectrum of end-to-end SLAM includes:
+    
+    \textbf{Pose Regression Networks} predict camera poses directly from images or image sequences. While conceptually simple, these approaches often struggle with generalization to new environments and accumulate drift over time, 
+    limiting their applicability to short trajectories.
+    
+    \textbf{Deep Visual Odometry} systems use CNNs or recurrent neural networks (RNNs) to estimate frame-to-frame motion, sometimes incorporating geometric constraints. DeepVO \cite{deepvo} represents early example 
+    that demonstrated the potential of learned odometry while highlighting the challenge of preventing drift.
+    
+    \textbf{Learning-based SLAM Frameworks} integrate deep networks while maintaining some classical components. MapNet \cite{mapnet} combines absolute pose regression with relative pose constraints, while CNN-SLAM \cite{cnnslam} 
+    and CodeSLAM \cite{codeslam} use learned components within a traditional SLAM framework.
+    
+    \textbf{Memory-Augmented Networks} address the mapping aspect by incorporating explicit memory mechanisms that store and retrieve spatial information. Neural SLAM architectures use differentiable memory structures 
+    that function similarly to occupancy grids or feature maps, allowing end-to-end training while maintaining interpretable map representations.
+    
+    
+    \newpage
+    \begin{figure}[h!]
+        \centering
+        \includegraphics[width=1.0\textwidth]{pose_regression.png}
+        \caption{An example of pose regression neural network. \cite{pose_regression_img}}
+        \label{fig:pose_regression}
+    \end{figure}
+
+    Key challenges in end-to-end SLAM include:
+    
+    \begin{itemize}
+        \item \textbf{Generalization}: Networks trained in specific environments often perform poorly in new settings
+        \item \textbf{Data Requirements}: Acquiring sufficient training data with ground truth poses and maps is difficult
+        \item \textbf{Interpretability}: Black-box models make debugging and performance guarantees challenging
+        \item \textbf{Computational Efficiency}: Deep networks typically require significant computational resources
+        \item \textbf{Consistency}: Ensuring global map consistency without explicit loop closure is difficult
+    \end{itemize}
+    
+    Despite these challenges, end-to-end approaches offer intriguing benefits:
+    
+    \begin{itemize}
+        \item \textbf{Adaptability}: Can potentially learn to handle conditions that challenge geometric methods
+        \item \textbf{Integration of Semantic Information}: Naturally incorporate object recognition and scene understanding
+        \item \textbf{Multimodal Fusion}: Can learn optimal ways to combine different sensor inputs
+        \item \textbf{Uncertainty Representation}: Some architectures naturally represent uncertain estimates
+    \end{itemize}
+    
+    Currently, end-to-end SLAM systems have not yet surpassed the best modular approaches in general settings. However, they show particular promise in specific scenarios where geometric assumptions break down, such as 
+    highly dynamic environments or scenes with significant non-rigid elements.
+    
+    \subsection{Neural Implicit Representations for Mapping}
+    
+    Neural implicit representations have emerged as a powerful alternative to traditional mapping techniques in SLAM. Unlike explicit representations such as point clouds, voxel grids, or mesh surfaces, implicit representations 
+    define the environment as a continuous function that maps spatial coordinates to properties like occupancy, signed distance to surfaces, or appearance.
+    
+    In the context of SLAM, neural networks parameterize these functions, typically as multi-layer perceptrons (MLPs) that take 3D coordinates as input and output properties at those locations. This approach offers several compelling advantages:
+    
+    \begin{itemize}
+        \item \textbf{Continuous Representation}: No discretization artifacts or resolution limitations
+        \item \textbf{Memory Efficiency}: Complex scenes represented by network parameters rather than explicit storage
+        \item \textbf{Differentiability}: Enables gradient-based optimization and integration with learning pipelines
+        \item \textbf{Regularization}: Networks naturally interpolate between observations and regularize noisy data
+    \end{itemize}
+    
+    Several types of neural implicit representations have been applied to SLAM:
+    
+    \textbf{Neural Radiance Fields (NeRF)} encode both geometry and appearance, representing scenes as continuous volumetric fields. Originally developed for novel view synthesis from static images \cite{nerf_paper}, NeRF has been adapted for SLAM in 
+    systems like iNeRF \cite{inerf}, which inverts the rendering process to estimate camera poses, and NICE-SLAM \cite{nice-slam}, which builds NeRF representations incrementally from RGB-D sequences.
+    
+    \begin{figure}[h!]
+        \centering
+        \makebox[\textwidth][c]{\includegraphics[width=1.1\textwidth]{nerf.png}}
+        \caption{This figure illustrates the NeRF pipeline. The left shows 5D input coordinates $(x,y,z,\theta,\phi)$ feeding into a neural network $F_\theta$. 
+        The network outputs color and density values $(RGB,\sigma)$ shown in the center. The right demonstrates volume rendering with two rays, showing accumulated color values and 
+        the $L_2$ rendering loss comparing predictions with ground truth. The scene reconstruction is visualized using an excavator model rendered from multiple viewpoints.
+        . \cite{nerf_img}}
+        \label{fig:nerf}
+    \end{figure}
+
+
+    \textbf{Signed Distance Functions (SDFs)} represent surfaces as the zero level-set of a function that outputs the signed distance to the nearest surface. Neural SDFs encode this function as a MLP, providing a compact and 
+    detailed surface representation. Systems like iSDF \cite{isdf} demonstrate how these representations can be built incrementally during SLAM operation.
+    
+    \begin{figure}[h!]
+        \centering
+        \makebox[\textwidth][c]{\includegraphics[width=0.6\textwidth]{sdf.png}}
+        \caption{(a) depiction of the underlying implicit surface $\text{SDF} = 0$ trained on sampled points inside ($\text{SDF} < 0$) and outside ($\text{SDF} > 0$) the surface, 
+        (b) 2D cross-section of the signed distance field, (c) rendered 3D surface recovered from $\text{SDF} = 0$. \cite{deepsdf}}
+        \label{fig:nerf}
+    \end{figure}
+
+    \newpage
+    \textbf{Occupancy Networks} learn a function that maps 3D points to occupancy probability, effectively encoding which parts of space are free or occupied.
+
+    \newpage
+    \subsection{Depth Estimation Networks}
+    
+    Depth estimation is a fundamental component of many SLAM systems, providing crucial 3D structure information from 2D images. Traditional approaches rely on multiple views (stereo or structure from motion) with explicit geometric constraints. Deep learning has transformed this area by enabling accurate depth estimation from limited inputs—even from single images—by leveraging learned priors about the world.
+    
+    Monocular depth estimation networks address a fundamentally ill-posed problem: recovering scale-ambiguous 3D information from a single 2D projection. These networks succeed by learning statistical relationships between image appearance and geometric structure from large datasets. They effectively encode priors such as:
+    
+    \begin{itemize}
+        \item Typical scales of common objects
+        \item Relationship between texture gradients and depth
+        \item Perspective effects on parallel lines
+        \item Occlusion patterns and their relationship to relative depth
+    \end{itemize}
+    
+    \newpage
+
+    Modern architectures for depth estimation typically use encoder-decoder structures with skip connections, similar to U-Net designs. These networks process images at multiple scales to capture both fine details and broader context.
+    For SLAM applications, depth networks are used in several ways:
+    
+    \textbf{Initialization and Bootstrapping}: Monocular SLAM systems traditionally struggle with initialization and scale estimation. Depth networks provide initial depth maps that establish scale and bootstrap mapping without requiring specific initialization motions.
+    
+    \textbf{Filling Gaps}: In semi-dense or sparse SLAM systems, learned depth can fill regions where geometric methods fail, particularly in textureless areas or regions with repetitive patterns.
+    
+    \textbf{Scale Recovery}: Monocular SLAM inherently suffers from scale drift. Depth networks that provide absolute scale estimates can correct this drift throughout operation.
+    
+    \textbf{Multi-View Consistency}: Modern systems like CNN-SLAM and DeepFactors \cite{deepfactors} use depth predictions as priors in multi-view optimization, combining learning-based initial estimates with geometric refinement.
+        
+    Self-supervised training has proven particularly valuable, allowing networks to learn from unlabeled video sequences by using photometric consistency loss between frames. This approach enables training on vast amounts of unlabeled data and adaptation to specific environments.
+        
+    Depth estimation networks have become integral components in state-of-the-art SLAM systems, effectively complementing geometric methods. They are particularly valuable in challenging scenarios such as dynamic scenes, textureless regions, and monocular setups where traditional approaches struggle. As these networks continue to improve in accuracy, efficiency, and generalization capability, their role in SLAM systems is likely to expand further.
 
     % \section{Computer Vision Advancements in SLAM}
     % \subsection{Visual Odometry and Place Recognition}
