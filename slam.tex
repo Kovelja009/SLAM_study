@@ -703,9 +703,59 @@
     \textbf{Long-Term Mapping} addresses environments that change over time, from seasonal variations to rearranged furniture. These methods implement strategies for map management, change detection, and experience-based navigation that maintains 
     different representations of the same location under varying conditions.
     
-    % \subsection{Self-Supervised and Few-Shot Learning}
-    % \subsection{Real-World Applications}
-    % \subsection{Challenges and Future Directions}
+    \newpage
+    \section{Current Research and Applications}
+
+    \subsection{Self-Supervised and Few-Shot Learning}
+    
+    Recent SLAM research has increasingly focused on reducing dependency on labeled data through self-supervised learning. These approaches leverage inherent geometric and temporal
+    consistency in visual data as supervision signals, enabling models to learn without human annotation.
+    
+    Self-supervised depth estimation trains networks using photometric consistency between multiple views, essentially using the SLAM problem itself as supervision. By warping images based on 
+    predicted depth and camera motion, networks learn to minimize reconstruction error without ground truth depth.
+    
+    Few-shot adaptation tackles the domain gap between training and deployment environments. Rather than requiring complete retraining, these methods adapt pre-trained networks to new environments with minimal data:
+    
+    \begin{itemize}
+        \item Meta-learning approaches learn initial weights that can quickly adapt to new scenarios
+        \item Domain adaptation techniques explicitly address shifts in visual appearance
+        \item Continual learning methods gradually update models during operation
+    \end{itemize}
+    
+    These advances are making SLAM systems more adaptable and practical for real-world deployment where collecting large labeled datasets for every environment is infeasible.
+    
+    \newpage
+    \subsection{Real-World Applications}
+    
+    SLAM technologies have matured beyond research labs to power a diverse range of applications:
+    
+    \textbf{Autonomous Vehicles} use SLAM for localization relative to high-definition maps and real-time obstacle detection. Companies like Waymo, Tesla, and Cruise integrate visual-inertial SLAM with other sensing modalities to create robust navigation systems.
+    
+    \textbf{Augmented Reality} platforms including Apple's ARKit, Google's ARCore, and Microsoft's HoloLens rely on visual SLAM to track device motion and anchor virtual content in the physical world. These systems must operate on mobile devices with limited computational resources.
+    
+    \textbf{Service Robotics} applications including vacuum cleaners, delivery robots, and healthcare assistants use SLAM for navigation in homes, hospitals, and offices. These systems prioritize reliability and safety when operating around humans.
+    
+    \textbf{Industrial Automation} employs SLAM for autonomous forklifts, inventory management, and inspection robots in warehouses and manufacturing facilities. These applications often require operation in challenging environments with reflective surfaces and repetitive structures.
+        
+    \subsection{Challenges and Future Directions}
+    
+    Despite impressive progress, several significant challenges remain:
+    
+    \textbf{Robustness in Extreme Conditions} remains a frontier, particularly in environments with challenging lighting (very bright, very dark, quickly changing), unusual motion patterns, or highly dynamic elements. Future systems will likely integrate multiple sensing modalities and learning-based approaches to handle these edge cases.
+    
+    \textbf{Resource Constraints} pose limitations for SLAM on embedded platforms like drones, mobile robots, and AR devices. Research on model compression, hardware-aware algorithms, and specialized architectures aims to deliver high-performance SLAM with limited computational resources.
+    
+    \textbf{Long-term Operation} challenges include drift accumulation, changing environments, and computational resource management over extended periods. Future systems will need better approaches to map maintenance, forgetting irrelevant information, and prioritizing computational effort.
+    
+    Promising future directions include:
+    
+    \begin{itemize}
+        \item \textbf{Multi-agent Collaborative SLAM} - distributed mapping across multiple robots with information sharing
+        \item \textbf{SLAM-aware Planning} - tighter integration between perception and planning systems
+        \item \textbf{Foundation Model Integration} - leveraging large pre-trained models for better scene understanding and generalization
+    \end{itemize}
+    
+    As SLAM systems continue to evolve, they will increasingly focus not just on "where am I and what does the world look like?" but on "what can I do in this environment?" This shift toward task-oriented spatial intelligence represents the next frontier in robot perception.
 
     
     \newpage
