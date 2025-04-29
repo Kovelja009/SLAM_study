@@ -586,9 +586,11 @@
     \newpage
     \subsection{Depth Estimation Networks}
     
-    Depth estimation is a fundamental component of many SLAM systems, providing crucial 3D structure information from 2D images. Traditional approaches rely on multiple views (stereo or structure from motion) with explicit geometric constraints. Deep learning has transformed this area by enabling accurate depth estimation from limited inputs—even from single images—by leveraging learned priors about the world.
+    Depth estimation is a fundamental component of many SLAM systems, providing crucial 3D structure information from 2D images. Traditional approaches rely on multiple views (stereo or structure from motion) with explicit 
+    geometric constraints. Deep learning has transformed this area by enabling accurate depth estimation from limited inputs—even from single images—by leveraging learned priors about the world.
     
-    Monocular depth estimation networks address a fundamentally ill-posed problem: recovering scale-ambiguous 3D information from a single 2D projection. These networks succeed by learning statistical relationships between image appearance and geometric structure from large datasets. They effectively encode priors such as:
+    Monocular depth estimation networks address a fundamentally ill-posed problem: recovering scale-ambiguous 3D information from a single 2D projection. These networks succeed by learning statistical relationships between 
+    image appearance and geometric structure from large datasets. They effectively encode priors such as:
     
     \begin{itemize}
         \item Typical scales of common objects
@@ -602,7 +604,8 @@
     Modern architectures for depth estimation typically use encoder-decoder structures with skip connections, similar to U-Net designs. These networks process images at multiple scales to capture both fine details and broader context.
     For SLAM applications, depth networks are used in several ways:
     
-    \textbf{Initialization and Bootstrapping}: Monocular SLAM systems traditionally struggle with initialization and scale estimation. Depth networks provide initial depth maps that establish scale and bootstrap mapping without requiring specific initialization motions.
+    \textbf{Initialization and Bootstrapping}: Monocular SLAM systems traditionally struggle with initialization and scale estimation. Depth networks provide initial depth maps that establish scale and bootstrap mapping without requiring 
+    specific initialization motions.
     
     \textbf{Filling Gaps}: In semi-dense or sparse SLAM systems, learned depth can fill regions where geometric methods fail, particularly in textureless areas or regions with repetitive patterns.
     
@@ -610,16 +613,96 @@
     
     \textbf{Multi-View Consistency}: Modern systems like CNN-SLAM and DeepFactors \cite{deepfactors} use depth predictions as priors in multi-view optimization, combining learning-based initial estimates with geometric refinement.
         
-    Self-supervised training has proven particularly valuable, allowing networks to learn from unlabeled video sequences by using photometric consistency loss between frames. This approach enables training on vast amounts of unlabeled data and adaptation to specific environments.
+    Self-supervised training has proven particularly valuable, allowing networks to learn from unlabeled video sequences by using photometric consistency loss between frames. This approach enables training on vast amounts of unlabeled 
+    data and adaptation to specific environments.
         
-    Depth estimation networks have become integral components in state-of-the-art SLAM systems, effectively complementing geometric methods. They are particularly valuable in challenging scenarios such as dynamic scenes, textureless regions, and monocular setups where traditional approaches struggle. As these networks continue to improve in accuracy, efficiency, and generalization capability, their role in SLAM systems is likely to expand further.
+    Depth estimation networks have become integral components in state-of-the-art SLAM systems, effectively complementing geometric methods. They are particularly valuable in challenging scenarios such as dynamic scenes, textureless regions, 
+    and monocular setups where traditional approaches struggle. As these networks continue to improve in accuracy, efficiency, and generalization capability, their role in SLAM systems is likely to expand further.
 
-    % \section{Computer Vision Advancements in SLAM}
-    % \subsection{Visual Odometry and Place Recognition}
-    % \subsection{Semantic SLAM}
-    % \subsection{Dynamic Environment Handling}
+    \section{Computer Vision Advancements in SLAM}
 
-    % \section{Current Research and Applications}
+    While deep learning has transformed many aspects of SLAM, computer vision continues to drive innovation through specialized techniques that enhance robustness, understanding, and adaptability. These advances focus on solving specific 
+    challenges within the SLAM pipeline rather than replacing entire systems.
+    
+    \subsection{Visual Odometry and Place Recognition}
+    
+    Visual odometry (VO) estimates camera motion between consecutive frames, forming the backbone of many SLAM systems. Traditional VO approaches rely on geometric constraints and feature matching but struggle in challenging conditions. 
+    Recent computer vision advances have significantly improved VO robustness and accuracy.
+    
+
+        \begin{figure}[h!]
+        \vspace{0.5cm}
+        \centering
+        \makebox[\textwidth][c]{\includegraphics[width=1.0\textwidth]{vis_odometry.png}}
+        \caption{Optical flow visualization in a residential street scene showing tracked feature points with motion vectors (green lines)}
+        \label{fig:vis_odometry}
+    \end{figure}
+
+    \newpage
+    \textbf{Learning-Enhanced Visual Odometry} maintains the core geometric principles while using learning for components that benefit most from data-driven approaches:
+    
+    \begin{itemize}
+        \item \textbf{Flow-based Methods} estimate dense optical flow using CNNs and derive camera motion through robust estimation techniques
+        \item \textbf{Outlier Rejection Networks} learn to identify unreliable matches that might violate geometric assumptions
+        \item \textbf{Confidence Estimation} predicts the reliability of motion estimates, enabling adaptive weighting or fallback strategies
+    \end{itemize}
+    
+    These hybrid approaches maintain the interpretability and geometric correctness of traditional VO while gaining robustness from learning-based components.
+    
+    \textbf{Place Recognition}, or loop closure detection, has seen transformative improvements through visual embedding techniques. Modern approaches typically follow a retrieval-based paradigm:
+    
+    \begin{itemize}
+        \item \textbf{Image Embedding Networks} map images to compact feature vectors where similar places have similar embeddings regardless of viewpoint or conditions
+        \item \textbf{Attention Mechanisms} focus on distinctive environmental elements while ignoring transient objects or lighting variations
+        \item \textbf{Sequential Matching} leverages temporal consistency across multiple frames to reduce false positives
+    \end{itemize}
+        
+    The integration of improved VO and place recognition creates SLAM systems that maintain reliable tracking while effectively detecting loops, even in previously challenging environments. 
+    This combination addresses the fundamental tension in SLAM between local consistency (through accurate VO) and global consistency (through reliable loop closure).
+    
+    \subsection{Semantic SLAM}
+    Semantic SLAM represents a fundamental paradigm shift from purely geometric reconstruction to scene understanding. By recognizing objects and structures, these systems create maps that capture both spatial layout and semantic meaning.
+    Core components include:
+    \textbf{Semantic Segmentation} networks (U-Net \cite{u-netformer}, DeepLabv3 \cite{deeplabv3}) classify each pixel in input images into meaningful categories like walls, floors, furniture, and objects.
+    \textbf{Object Detection Systems} like Mask R-CNN \cite{mask_r-cnn} identify specific object instances with their boundaries and classes, providing rich information for higher-level mapping.
+
+    \begin{figure}[h!]
+        \vspace{0.5cm}
+        \centering
+        \makebox[\textwidth][c]{\includegraphics[width=1\textwidth]{visual_odometry.jpg}}
+        \caption{Semantic motion segmentation in visual SLAM showing dynamic objects (pedestrians in green, vehicles in red) distinguished from the static environment (grayscale background) through combined visual odometry and object detection, 
+        enabling robust localization in urban environments with multiple moving elements. \cite{geiger_lib}}
+        \label{fig:visual_odometry}
+    \end{figure}
+
+    \newpage
+    Semantic mapping approaches integrate this understanding with geometric reconstruction through:
+    \begin{itemize}
+    \item \textbf{Voxel-Based Fusion} - combining depth and semantic labels in volumetric representations
+    \item \textbf{Object-Level Mapping} - using detected objects as primitives instead of points or surfaces
+    \item \textbf{Hierarchical Representations} - organizing maps into meaningful layers from geometry to semantics
+    \end{itemize}
+    This semantic integration provides several crucial benefits: improved data association through object recognition; richer scene understanding for navigation, effective dynamic object handling, more compact map representations, and robust loop closure 
+    based on landmark recognition despite appearance changes.
+    Object-SLAM exemplifies this evolution by making objects the primary mapping elements. The environment becomes a collection of recognized objects with poses and shapes, often using category-level priors from datasets like ShapeNet \cite{shapenet}. 
+    This approach enables meaningful interaction in applications where understanding what objects are and their function is as important as knowing their position.
+
+    \newpage
+    \subsection{Dynamic Environment Handling}
+    Traditional SLAM systems assume static environments, where sensor reading changes reflect only camera motion. This assumption breaks down in real-world settings with moving objects and changing conditions. Modern approaches address this limitation 
+    through several techniques:
+    \textbf{Motion Segmentation} identifies moving elements by:
+    \begin{itemize}
+    \item Detecting geometric inconsistencies in feature tracks or depth measurements
+    \item Analyzing optical flow patterns to identify independent motion
+    \item Using deep networks specifically trained to segment dynamic objects
+    \end{itemize}
+    \textbf{Object-Level Dynamics Modeling} goes beyond simple segmentation to track and predict the motion of identified objects. Rather than simply removing dynamic elements, these approaches create trajectory models of moving objects and 
+    integrate them into the environmental representation.
+    
+    \textbf{Long-Term Mapping} addresses environments that change over time, from seasonal variations to rearranged furniture. These methods implement strategies for map management, change detection, and experience-based navigation that maintains 
+    different representations of the same location under varying conditions.
+    
     % \subsection{Self-Supervised and Few-Shot Learning}
     % \subsection{Real-World Applications}
     % \subsection{Challenges and Future Directions}
